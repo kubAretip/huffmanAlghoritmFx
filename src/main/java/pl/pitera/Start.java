@@ -27,7 +27,7 @@ public class Start extends Application {
         stage.show();
     }
 
-    private URL getFxmlUrl(String fxmlPath) {
+    public URL getFxmlUrl(String fxmlPath) {
 
         URL url = null;
 

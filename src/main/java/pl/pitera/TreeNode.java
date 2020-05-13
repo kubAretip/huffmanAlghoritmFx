@@ -3,21 +3,31 @@ package pl.pitera;
 public class TreeNode {
 
     private int freq;
-    private char character;
+    private Character character;
     private TreeNode left;
     private TreeNode right;
 
 
-    public TreeNode(int freq, char character) {
+    public TreeNode(int freq, Character character) {
         this.freq = freq;
         this.character = character;
     }
 
-    public TreeNode(int freq, char character, TreeNode left, TreeNode right) {
+    public TreeNode(int freq, Character character, TreeNode left, TreeNode right) {
         this.freq = freq;
         this.character = character;
         this.left = left;
         this.right = right;
+    }
+
+    public static int getHeight(TreeNode root) {
+        if (root == null)
+            return 0;
+
+        int heightLeft = getHeight(root.getLeft());
+        int heightRight = getHeight(root.getRight());
+
+        return 1 + Math.max(heightLeft, heightRight);
     }
 
     public int getFreq() {
@@ -28,11 +38,11 @@ public class TreeNode {
         this.freq = freq;
     }
 
-    public char getCharacter() {
+    public Character getCharacter() {
         return character;
     }
 
-    public void setCharacter(char character) {
+    public void setCharacter(Character character) {
         this.character = character;
     }
 
@@ -50,5 +60,15 @@ public class TreeNode {
 
     public void setRight(TreeNode right) {
         this.right = right;
+    }
+
+    @Override
+    public String toString() {
+        return "TreeNode{" +
+                "freq=" + freq +
+                ", character=" + character +
+                ", left=" + left +
+                ", right=" + right +
+                '}';
     }
 }
