@@ -5,17 +5,14 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+/**
+ * View model
+ */
 public class CharCode {
 
     private StringProperty character;
     private IntegerProperty frequency;
     private StringProperty code;
-
-    public CharCode(String encodedChar) {
-        this.character = new SimpleStringProperty(encodedChar);
-        this.frequency = new SimpleIntegerProperty(1);
-        this.code = new SimpleStringProperty("");
-    }
 
     public CharCode(String character, Integer frequency, String code) {
         this.character = new SimpleStringProperty(character);
@@ -31,20 +28,8 @@ public class CharCode {
         return character;
     }
 
-    public void setCharacter(String character) {
-        this.character.set(character);
-    }
-
     public Integer getFrequency() {
         return frequency.get();
-    }
-
-    public IntegerProperty frequencyProperty() {
-        return frequency;
-    }
-
-    public void setFrequency(Integer frequency) {
-        this.frequency.set(frequency);
     }
 
     public String getCode() {

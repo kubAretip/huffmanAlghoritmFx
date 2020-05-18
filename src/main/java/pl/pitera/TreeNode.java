@@ -7,7 +7,6 @@ public class TreeNode {
     private TreeNode left;
     private TreeNode right;
 
-
     public TreeNode(int freq, Character character) {
         this.freq = freq;
         this.character = character;
@@ -34,41 +33,16 @@ public class TreeNode {
         return freq;
     }
 
-    public void setFreq(int freq) {
-        this.freq = freq;
-    }
-
     public Character getCharacter() {
         return character;
-    }
-
-    public void setCharacter(Character character) {
-        this.character = character;
     }
 
     public TreeNode getLeft() {
         return left;
     }
 
-    public void setLeft(TreeNode left) {
-        this.left = left;
-    }
-
     public TreeNode getRight() {
         return right;
     }
 
-    public void setRight(TreeNode right) {
-        this.right = right;
-    }
-
-    @Override
-    public String toString() {
-        return "TreeNode{" +
-                "freq=" + freq +
-                ", character=" + character +
-                ", left=" + left +
-                ", right=" + right +
-                '}';
-    }
 }
