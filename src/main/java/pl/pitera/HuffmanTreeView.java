@@ -11,20 +11,21 @@ public class HuffmanTreeView {
     private static final int BRANCH_ANGLE = 60;
     private static final int CIRCLE_RADIUS = CIRCLE_DIAMETER / 2;
 
-    public Canvas buildTreeView(TreeNode tree) {
+    public Canvas drawTree(TreeNode tree) {
 
         int treeHeight = TreeNode.getHeight(tree);
 
         //max canvas size is 4096x4096 (this is javafx bug)
         Canvas treeCanvas = new Canvas(4096, 2000);
         GraphicsContext graphicsContext = treeCanvas.getGraphicsContext2D();
-        //   graphicsContext.scale(0.25,0.25);
 
+
+        //init tree position
         double initialMarginBetweenItems = (Math.pow(2, treeHeight - 1) * CIRCLE_DIAMETER) / 2;
         double initialTreePositionX = 2 * initialMarginBetweenItems;
         double initialTreePositionY = 50;
 
-        display(tree, initialTreePositionX, initialTreePositionY, graphicsContext, initialMarginBetweenItems);
+        drawBranch(tree, initialTreePositionX, initialTreePositionY, graphicsContext, initialMarginBetweenItems);
 
         return treeCanvas;
     }
@@ -48,7 +49,7 @@ public class HuffmanTreeView {
         }
     }
 
-    private void display(TreeNode root, double x, double y, GraphicsContext graphicsContext, double leavesMargin) {
+    private void drawBranch(TreeNode root, double x, double y, GraphicsContext graphicsContext, double leavesMargin) {
 
         drawCircle(root, x, y, graphicsContext);
 
@@ -73,7 +74,7 @@ public class HuffmanTreeView {
 
             graphicsContext.strokeLine(x0, y0, x1, y1);
 
-            display(root.getLeft(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
+            drawBranch(root.getLeft(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
         }
         if (root.getRight() != null) {
 
@@ -88,7 +89,7 @@ public class HuffmanTreeView {
 
             graphicsContext.strokeLine(x0, y0, x1, y1);
 
-            display(root.getRight(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
+            drawBranch(root.getRight(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
         }
 
     }

@@ -11,14 +11,11 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class MainStageController implements Initializable {
@@ -27,16 +24,16 @@ public class MainStageController implements Initializable {
     TextArea textToEncodeTextArea;
 
     @FXML
-    TableView<CharCode> charsTableView;
+    TableView<CharacterViewModel> charsTableView;
 
     @FXML
-    TableColumn<CharCode, String> charsColumn;
+    TableColumn<CharacterViewModel, String> charsColumn;
 
     @FXML
-    TableColumn<CharCode, String> probabilityColumn;
+    TableColumn<CharacterViewModel, String> probabilityColumn;
 
     @FXML
-    TableColumn<CharCode, String> codeColumn;
+    TableColumn<CharacterViewModel, String> codeColumn;
 
     @FXML
     Label encodedMessageLabel;
@@ -48,7 +45,7 @@ public class MainStageController implements Initializable {
     Label entropyLabel;
 
     private StringProperty messageStringProp;
-    private ObservableList<CharCode> characters;
+    private ObservableList<CharacterViewModel> characters;
     private HuffmanAlgorithm huffmanAlgorithm;
     private StringBuilder encodedMessageStringBuilder;
     private StringProperty entropyStringProp;
@@ -71,7 +68,11 @@ public class MainStageController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
+        //setup bindings
         Bindings.bindBidirectional(textToEncodeTextArea.textProperty(), messageStringProp);
+        encodedMessageLabel.textProperty().bindBidirectional(encodeMessageStingProp);
+        avgWordLengthLabel.textProperty().bindBidirectional(avgWordLengthStringProp);
+        entropyLabel.textProperty().bindBidirectional(entropyStringProp);
 
         setupTableView();
 
@@ -81,33 +82,43 @@ public class MainStageController implements Initializable {
             int textLength = observableValue.getValue().length();
 
             if (textLength > 1) {
-                Map<Character, Integer> charactersOccurrences = new HashMap<>();
 
-                characters.clear();  //is not good solution but work
+                Map<Character, Integer> charactersFrequency = new HashMap<>();
+
+                //is not good solution but work
+                encodedMessageStringBuilder.setLength(0);
+                characters.clear();
 
                 //split string to chars
                 Stream<Character> characterStream = observableValue.getValue().chars().mapToObj(c -> (char) c);
 
-                //add characters to the map with their occurrence
-                characterStream.forEach(character -> charactersOccurrences.compute(character, (k, v) -> (v == null) ? 1 : v + 1));
+                //add characters to the map with their frequency
+                characterStream.forEach(character -> charactersFrequency.compute(character, (k, v) -> (v == null) ? 1 : v + 1));
 
-                charactersOccurrences.forEach((character, integer) -> characters.add(new CharCode(character.toString(), integer, null)));
+                //data models
+                PriorityQueue<TreeNode> treeNodes = new PriorityQueue<>(Comparator.comparingInt(TreeNode::getFreq));
+                charactersFrequency.forEach((character, freq) -> treeNodes.add(new TreeNode(freq, character)));
+
+                //update view models
+                charactersFrequency.forEach((character, freq) -> characters.add(new CharacterViewModel(character.toString(), freq, null)));
 
                 //encode characters
-                treeTop = huffmanAlgorithm.buildTree(characters);
+                treeTop = huffmanAlgorithm.buildTree(treeNodes);
                 Map<Character, String> huffmanCodes = huffmanAlgorithm.encodeCharacters(treeTop);
-                updateList(characters, huffmanCodes);
+                updateViewList(characters, huffmanCodes);
 
+                //entropy label
                 entropyStringProp.setValue(String.valueOf(huffmanAlgorithm.calcEntropy(characters, textLength)));
-                entropyLabel.textProperty().bindBidirectional(entropyStringProp);
-                avgWordLengthStringProp.setValue(String.valueOf(huffmanAlgorithm.avgWordLength(characters, textLength)));
-                avgWordLengthLabel.textProperty().bindBidirectional(avgWordLengthStringProp);
 
+                //avg word length label
+                avgWordLengthStringProp.setValue(String.valueOf(huffmanAlgorithm.calcAvgWordLength(characters, textLength)));
 
-                encodedMessageStringBuilder.setLength(0);
-                characters.forEach(charCode -> encodedMessageStringBuilder.append(charCode.getCode()));
+                //joining of coded characters
+                characters.forEach(characterViewModel -> encodedMessageStringBuilder.append(characterViewModel.getCode()));
+
+                //encoded message label
                 encodeMessageStingProp.setValue(encodedMessageStringBuilder.toString());
-                encodedMessageLabel.textProperty().bindBidirectional(encodeMessageStingProp);
+
 
             } else {
                 treeTop = null;
@@ -126,6 +137,7 @@ public class MainStageController implements Initializable {
     private void setupTableView() {
 
         charsTableView.setPlaceholder(new Label("Brak wymaganej ilości znaków"));
+
         charsColumn.setCellValueFactory(cellData -> cellData.getValue().characterProperty());
         probabilityColumn.setCellValueFactory(charCodeStringCellDataFeatures ->
                 new SimpleStringProperty(charCodeStringCellDataFeatures.getValue().getFrequency() + " / " + messageStringProp.getValue().length()));
@@ -145,15 +157,18 @@ public class MainStageController implements Initializable {
     public void treeButton() {
 
         if (treeTop != null) {
+
             Stage stage = new Stage();
             stage.setTitle("Drzewo");
-            FlowPane flowPane = new FlowPane();
-            ScrollPane scrollPane = new ScrollPane(flowPane);
 
-            Canvas treeCanvas = huffmanTreeView.buildTreeView(treeTop);
+            StackPane container = new StackPane();
+            ScrollPane scrollPane = new ScrollPane(container);
 
-            flowPane.getChildren().add(treeCanvas);
-            flowPane.setStyle("-fx-background-color: #EEEEEE");
+            Canvas treeCanvas = huffmanTreeView.drawTree(treeTop);
+            container.getChildren().add(treeCanvas);
+
+            container.setStyle("-fx-background-color: #D6D6D6");
+
             stage.setScene(new Scene(scrollPane, 1024, 720));
             stage.show();
 
@@ -164,14 +179,14 @@ public class MainStageController implements Initializable {
             alert.setContentText("Wiadomość musi się składać z minimum 2 różnych znaków !");
             alert.showAndWait();
         }
-
     }
 
-    private void updateList(List<CharCode> charCodeList, Map<Character, String> huffmanCodes) {
-        charCodeList.forEach(charCode -> {
+
+    private void updateViewList(List<CharacterViewModel> characterViewModelList, Map<Character, String> huffmanCodes) {
+        characterViewModelList.forEach(characterViewModel -> {
             huffmanCodes.forEach((character, s) -> {
-                if (charCode.getCharacter().equals(character.toString())) {
-                    charCode.setCode(s);
+                if (characterViewModel.getCharacter().equals(character.toString())) {
+                    characterViewModel.setCode(s);
                 }
             });
         });

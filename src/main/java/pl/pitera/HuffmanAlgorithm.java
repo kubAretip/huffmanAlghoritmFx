@@ -1,38 +1,30 @@
 package pl.pitera;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
 
 
 public class HuffmanAlgorithm {
 
-    /**
-     * @param charCodeList list with characters
-     * @return return tree root node
-     * @see CharCode
-     */
-    public TreeNode buildTree(List<CharCode> charCodeList) {
 
-        if (charCodeList.size() > 1) {
+    public TreeNode buildTree(PriorityQueue<TreeNode> treeNodes) {
 
-            PriorityQueue<TreeNode> treeNodes = new PriorityQueue<>(Comparator.comparingInt(TreeNode::getFreq));
-            charCodeList.forEach(charCode -> treeNodes.add(new TreeNode(charCode.getFrequency(), charCode.getCharacter().toCharArray()[0])));
+        while (treeNodes.size() != 1) {
 
-            while (treeNodes.size() != 1) {
+            TreeNode leftNode = treeNodes.poll();
+            TreeNode rightNode = treeNodes.poll();
 
-                TreeNode leftNode = treeNodes.poll();
-                TreeNode rightNode = treeNodes.poll();
-
-                if (leftNode != null && rightNode != null) {
-                    int rootSum = leftNode.getFreq() + rightNode.getFreq();
-                    treeNodes.add(new TreeNode(rootSum, null, leftNode, rightNode));
-                }
+            if (leftNode != null && rightNode != null) {
+                int rootSum = leftNode.getFreq() + rightNode.getFreq();
+                treeNodes.add(new TreeNode(rootSum, null, leftNode, rightNode));
             }
-            return treeNodes.peek();
         }
-        return null;
+        return treeNodes.peek();
     }
 
-   public Map<Character, String> encodeCharacters(TreeNode root) {
+    public Map<Character, String> encodeCharacters(TreeNode root) {
         Map<Character, String> huffmanCodes = new HashMap<>();
         encode(root, "", huffmanCodes);
         return huffmanCodes;
@@ -51,28 +43,25 @@ public class HuffmanAlgorithm {
         }
     }
 
-    public double calcEntropy(List<CharCode> charCodeList, int textLength) {
+    public double calcEntropy(List<CharacterViewModel> characterViewModelList, int textLength) {
 
-        return charCodeList.stream()
-                .mapToDouble(charCode -> (charCode.getFrequency() / (double) textLength))
-                .map(prob -> (prob * customLog(2, (1 / prob)))).sum();
+        return characterViewModelList.stream()
+                .mapToDouble(characterViewModel -> (characterViewModel.getFrequency() / (double) textLength))
+                .map(prob -> (prob * CustomMath.customLog(2, (1 / prob)))).sum();
 
     }
 
 
-    public double avgWordLength(List<CharCode> charCodeList, int textLength) {
+    public double calcAvgWordLength(List<CharacterViewModel> characterViewModelList, int textLength) {
         double sum = 0;
 
-        for (CharCode charCode : charCodeList) {
-            var prob = (charCode.getFrequency() / (double) textLength);
-            sum += (prob * charCode.getCode().length());
+        for (CharacterViewModel characterViewModel : characterViewModelList) {
+            var prob = (characterViewModel.getFrequency() / (double) textLength);
+            sum += (prob * characterViewModel.getCode().length());
         }
 
         return sum;
     }
 
-    private static double customLog(double base, double logNumber) {
-        return Math.log(logNumber) / Math.log(base);
-    }
 
 }
