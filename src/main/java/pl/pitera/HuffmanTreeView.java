@@ -15,15 +15,18 @@ public class HuffmanTreeView {
 
         int treeHeight = TreeNode.getHeight(tree);
 
-        //max canvas size is 4096x4096 (this is javafx bug)
-        Canvas treeCanvas = new Canvas(4096, 2000);
-        GraphicsContext graphicsContext = treeCanvas.getGraphicsContext2D();
-
-
         //init tree position
-        double initialMarginBetweenItems = (Math.pow(2, treeHeight - 1) * CIRCLE_DIAMETER) / 2;
+        double initialMarginBetweenItems = (Math.pow(2, treeHeight - 1) * CIRCLE_RADIUS) / 2;
         double initialTreePositionX = 2 * initialMarginBetweenItems;
         double initialTreePositionY = 50;
+
+        double canvasY = (treeHeight * CIRCLE_DIAMETER) + ((treeHeight - 1) * 60) + initialTreePositionY;
+        double canvasX = 4 * initialMarginBetweenItems;
+
+        final Canvas treeCanvas = new Canvas(canvasX, canvasY);
+
+        GraphicsContext graphicsContext = treeCanvas.getGraphicsContext2D();
+        graphicsContext.scale(0.75, 0.75);
 
         drawBranch(tree, initialTreePositionX, initialTreePositionY, graphicsContext, initialMarginBetweenItems);
 
@@ -33,7 +36,7 @@ public class HuffmanTreeView {
     private void drawCircle(TreeNode root, double x, double y, GraphicsContext graphicsContext) {
 
         graphicsContext.setLineWidth(2);
-        graphicsContext.setFill(Color.WHITE);
+        graphicsContext.setFill(Color.valueOf("#d6d4ff"));
         graphicsContext.fillOval(x, y, CIRCLE_DIAMETER, CIRCLE_DIAMETER);
         graphicsContext.setFill(Color.BLACK);
 

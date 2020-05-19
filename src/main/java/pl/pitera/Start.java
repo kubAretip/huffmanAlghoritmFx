@@ -10,6 +10,10 @@ import java.net.URL;
 
 public class Start extends Application {
 
+    private final static int MIN_WINDOW_WIDTH = 1024;
+    private final static int MIN_WINDOW_HEIGHT = 720;
+    private final static String WINDOW_TITLE = "Metody kompresji informacji w sieci";
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -18,11 +22,15 @@ public class Start extends Application {
     public void start(Stage stage) throws Exception {
 
         FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(getFxmlUrl("views/mainStage.fxml"));
+
+        String fxmlPath = "views/mainStage.fxml";
+        fxmlLoader.setLocation(getFxmlUrl(fxmlPath));
 
         Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root, 1024, 720);
-        stage.setTitle("Metody kompresji informacji w sieci");
+        Scene scene = new Scene(root, MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
+        stage.setMinWidth(MIN_WINDOW_WIDTH);
+        stage.setMinHeight(MIN_WINDOW_HEIGHT);
+        stage.setTitle(WINDOW_TITLE);
         stage.setScene(scene);
         stage.show();
     }

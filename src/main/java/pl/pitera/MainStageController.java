@@ -6,14 +6,23 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.transform.Transform;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Stream;
@@ -36,13 +45,13 @@ public class MainStageController implements Initializable {
     TableColumn<CharacterViewModel, String> codeColumn;
 
     @FXML
-    Label encodedMessageLabel;
+    TextArea avgWordLength;
 
     @FXML
-    Label avgWordLengthLabel;
+    TextArea entropy;
 
     @FXML
-    Label entropyLabel;
+    TextArea encodedMessage;
 
     private StringProperty messageStringProp;
     private ObservableList<CharacterViewModel> characters;
@@ -68,11 +77,12 @@ public class MainStageController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
+
         //setup bindings
         Bindings.bindBidirectional(textToEncodeTextArea.textProperty(), messageStringProp);
-        encodedMessageLabel.textProperty().bindBidirectional(encodeMessageStingProp);
-        avgWordLengthLabel.textProperty().bindBidirectional(avgWordLengthStringProp);
-        entropyLabel.textProperty().bindBidirectional(entropyStringProp);
+        encodedMessage.textProperty().bindBidirectional(encodeMessageStingProp);
+        avgWordLength.textProperty().bindBidirectional(avgWordLengthStringProp);
+        entropy.textProperty().bindBidirectional(entropyStringProp);
 
         setupTableView();
 
@@ -124,9 +134,9 @@ public class MainStageController implements Initializable {
                 treeTop = null;
                 encodedMessageStringBuilder.setLength(0);
                 characters.clear();
-                encodedMessageLabel.setText("");
-                avgWordLengthLabel.setText("");
-                entropyLabel.setText("");
+                encodedMessage.setText("");
+                avgWordLength.setText("");
+                entropy.setText("");
             }
 
 
@@ -161,24 +171,68 @@ public class MainStageController implements Initializable {
             Stage stage = new Stage();
             stage.setTitle("Drzewo");
 
-            StackPane container = new StackPane();
+            AnchorPane container = new AnchorPane();
+
             ScrollPane scrollPane = new ScrollPane(container);
 
             Canvas treeCanvas = huffmanTreeView.drawTree(treeTop);
+
             container.getChildren().add(treeCanvas);
 
-            container.setStyle("-fx-background-color: #D6D6D6");
-
-            stage.setScene(new Scene(scrollPane, 1024, 720));
+            Scene scene = new Scene(scrollPane, 800, 800);
+            stage.setScene(scene);
             stage.show();
 
         } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Uwaga!");
-            alert.setHeaderText("Nieprawidłowa wiadomość");
-            alert.setContentText("Wiadomość musi się składać z minimum 2 różnych znaków !");
-            alert.showAndWait();
+            showAlertMessage();
         }
+    }
+
+    @FXML
+    public void saveTree() {
+        if (treeTop != null) {
+            FileChooser fileChooser = new FileChooser();
+
+            //Set extension filter
+            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("png files (*.png)", "*.png");
+            fileChooser.getExtensionFilters().add(extFilter);
+
+            //Show save file dialog
+            File file = fileChooser.showSaveDialog(new Stage());
+
+            if (file != null) {
+                Runnable runnable = new Thread(() -> {
+                    Canvas treeCanvas = huffmanTreeView.drawTree(treeTop);
+                    WritableImage writableImage =snapshotScaledCanvas(treeCanvas,2);
+                    RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
+                    try {
+                        ImageIO.write(renderedImage, "png", file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                runnable.run();
+            }
+        } else {
+            showAlertMessage();
+        }
+    }
+
+
+    public static WritableImage snapshotScaledCanvas(Canvas canvas, double pixelScale) {
+        WritableImage writableImage = new WritableImage((int)Math.rint(pixelScale*canvas.getWidth()), (int)Math.rint(pixelScale*canvas.getHeight()));
+        SnapshotParameters spa = new SnapshotParameters();
+        spa.setTransform(Transform.scale(pixelScale, pixelScale));
+        return canvas.snapshot(spa, writableImage);
+    }
+
+    private void showAlertMessage() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Uwaga!");
+        alert.setHeaderText("Nieprawidłowa wiadomość");
+        alert.setContentText("Wiadomość musi się składać z minimum 2 różnych znaków !");
+        alert.showAndWait();
+
     }
 
 
