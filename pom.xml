@@ -45,9 +45,15 @@
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.4</version>
+                <version>0.0.3</version>
                 <configuration>
                     <mainClass>pl.pitera.Start</mainClass>
+                    <launcher>launch.sh</launcher>
+                    <compress>2</compress>
+                    <jlinkZipName>huffman</jlinkZipName>
+                    <jlinkImageName>huffman</jlinkImageName>
+                    <noManPages>true</noManPages>
+                    <noHeaderFiles>true</noHeaderFiles>
                     <options>
                         <option>-Xmx1024m</option>
                         <option>-Dprism.order=sw</option>
@@ -56,5 +62,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

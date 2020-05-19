@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="720.0" prefWidth="1024.0" stylesheets="@../styles/main.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.pitera.MainStageController">
+<AnchorPane prefHeight="720.0" prefWidth="1024.0" stylesheets="@main.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.pitera.MainStageController">
    <children>
       <Text layoutX="28.0" layoutY="79.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Kodowanie Huffmana" wrappingWidth="372.0" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="30.0">
          <font>

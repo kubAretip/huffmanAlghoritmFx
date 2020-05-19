@@ -23,7 +23,7 @@ public class Start extends Application {
 
         FXMLLoader fxmlLoader = new FXMLLoader();
 
-        String fxmlPath = "views/mainStage.fxml";
+        String fxmlPath = "mainStage.fxml";
         fxmlLoader.setLocation(getFxmlUrl(fxmlPath));
 
         Parent root = fxmlLoader.load();
