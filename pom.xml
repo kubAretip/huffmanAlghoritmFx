@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>11</maven.compiler.release>
         <javafx.version>14</javafx.version>
-        <jvm.args>-Xmx1024m -Dprism.order=sw</jvm.args>
+        <jvm.args>-Xmx1024m -Dprism.order=sw -Djavafx.animation.fullspeed=true -Dprism.poolstats=true -Dprism.maxvram=512m </jvm.args>
     </properties>
     <dependencies>
         <dependency>

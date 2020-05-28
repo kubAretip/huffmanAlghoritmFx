@@ -23,14 +23,33 @@ public class HuffmanTreeView {
         double canvasY = (treeHeight * CIRCLE_DIAMETER) + ((treeHeight - 1) * 60) + initialTreePositionY;
         double canvasX = 4 * initialMarginBetweenItems;
 
-        final Canvas treeCanvas = new Canvas(canvasX, canvasY);
+        if (canvasX <= 10240) {
+            final Canvas treeCanvas = new Canvas(canvasX, canvasY);
+            System.out.println("X " + canvasX);
+            System.out.println("Y " + canvasY);
 
-        GraphicsContext graphicsContext = treeCanvas.getGraphicsContext2D();
-        graphicsContext.scale(0.75, 0.75);
 
-        drawBranch(tree, initialTreePositionX, initialTreePositionY, graphicsContext, initialMarginBetweenItems);
+            GraphicsContext graphicsContext = treeCanvas.getGraphicsContext2D();
+            graphicsContext.scale(0.75, 0.75);
 
-        return treeCanvas;
+            drawBranch(tree, initialTreePositionX, initialTreePositionY, graphicsContext, initialMarginBetweenItems);
+
+            return treeCanvas;
+        } else {
+            canvasX = 10240;
+            canvasY = 1000;
+            final Canvas treeCanvas = new Canvas(canvasX, canvasY);
+            GraphicsContext graphicsContext = treeCanvas.getGraphicsContext2D();
+            graphicsContext.scale(0.3, 0.3);
+
+            drawBranch(tree, initialTreePositionX, initialTreePositionY, graphicsContext, initialMarginBetweenItems);
+            return treeCanvas;
+            // return null
+            // is javafx max canvas size error
+            // when size is bigger 10240px compiler throw nullpointerexception
+           // return null;
+        }
+
     }
 
     private void drawCircle(TreeNode root, double x, double y, GraphicsContext graphicsContext) {
@@ -46,7 +65,18 @@ public class HuffmanTreeView {
             graphicsContext.setFill(Color.BLACK);
             graphicsContext.fillOval((x + (CIRCLE_RADIUS / 2.0)), (y + CIRCLE_RADIUS), 20, 20);
             graphicsContext.setFill(Color.WHITE);
-            graphicsContext.fillText(root.getCharacter().toString(), (x + (CIRCLE_RADIUS / 2.0) + 5), (y + CIRCLE_DIAMETER) - 5, 10);
+
+            String character = root.getCharacter().toString();
+
+            if (character.equals(" "))
+                graphicsContext.fillText("spc", (x + (CIRCLE_RADIUS / 2.0) + 5), (y + CIRCLE_DIAMETER) - 5, 10);
+            if (character.equals("\n"))
+                graphicsContext.fillText("\\n", (x + (CIRCLE_RADIUS / 2.0) + 5), (y + CIRCLE_DIAMETER) - 5, 10);
+            if (character.equals("\t"))
+                graphicsContext.fillText("tab", (x + (CIRCLE_RADIUS / 2.0) + 5), (y + CIRCLE_DIAMETER) - 5, 10);
+
+            graphicsContext.fillText(character, (x + (CIRCLE_RADIUS / 2.0) + 5), (y + CIRCLE_DIAMETER) - 5, 10);
+
         } else {
             graphicsContext.fillText(Integer.toString(root.getFreq()), (x + CIRCLE_RADIUS) - 4, y + CIRCLE_RADIUS + 5, 10);
         }

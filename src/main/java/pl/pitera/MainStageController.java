@@ -86,6 +86,7 @@ public class MainStageController implements Initializable {
 
         setupTableView();
 
+
         //listen on the entered message to encode
         messageStringProp.addListener((observableValue, oldVal, newVal) -> {
 
@@ -148,7 +149,18 @@ public class MainStageController implements Initializable {
 
         charsTableView.setPlaceholder(new Label("Brak wymaganej ilości znaków"));
 
-        charsColumn.setCellValueFactory(cellData -> cellData.getValue().characterProperty());
+        charsColumn.setCellValueFactory(cellData -> {
+            if (cellData.getValue().characterProperty().getValue().toCharArray()[0] == ' ')
+                return new SimpleStringProperty("<spacja>");
+
+            if (cellData.getValue().characterProperty().getValue().toCharArray()[0] == '\n')
+                return new SimpleStringProperty("<nowa linia>");
+
+            if (cellData.getValue().characterProperty().getValue().toCharArray()[0] == '\t')
+                return new SimpleStringProperty("<tabulator>");
+
+            return cellData.getValue().characterProperty();
+        });
         probabilityColumn.setCellValueFactory(charCodeStringCellDataFeatures ->
                 new SimpleStringProperty(charCodeStringCellDataFeatures.getValue().getFrequency() + " / " + messageStringProp.getValue().length()));
         codeColumn.setCellValueFactory(cellData -> cellData.getValue().codeProperty());
@@ -167,24 +179,29 @@ public class MainStageController implements Initializable {
     public void treeButton() {
 
         if (treeTop != null) {
-
-            Stage stage = new Stage();
-            stage.setTitle("Drzewo");
-
-            AnchorPane container = new AnchorPane();
-
-            ScrollPane scrollPane = new ScrollPane(container);
-
             Canvas treeCanvas = huffmanTreeView.drawTree(treeTop);
+            if (treeCanvas != null) {
+                Stage stage = new Stage();
+                stage.setTitle("Drzewo");
 
-            container.getChildren().add(treeCanvas);
+                AnchorPane container = new AnchorPane();
 
-            Scene scene = new Scene(scrollPane, 800, 800);
-            stage.setScene(scene);
-            stage.show();
+                ScrollPane scrollPane = new ScrollPane(container);
 
+
+                container.getChildren().add(treeCanvas);
+
+                Scene scene = new Scene(scrollPane, 800, 800);
+                stage.setScene(scene);
+                stage.show();
+            } else {
+                // i know is not good solution... ;/
+                showAlertMessage("Uwaga", "Błąd renderowania drzewa", "Ze względu na ograniczenia biblioteki JavaFx nie można stworzyć drzewa." +
+                        "\nWielkość drzewa jest za duża." +
+                        "\nWprowadź mniejszą wiadomość.");
+            }
         } else {
-            showAlertMessage();
+            showAlertMessage("Uwaga!", "Nieprawidłowa wiadomość", "Wiadomość musi się składać z minimum 2 różnych znaków !");
         }
     }
 
@@ -197,40 +214,52 @@ public class MainStageController implements Initializable {
             FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("png files (*.png)", "*.png");
             fileChooser.getExtensionFilters().add(extFilter);
 
-            //Show save file dialog
-            File file = fileChooser.showSaveDialog(new Stage());
+            //build tree view
+            Canvas treeCanvas = huffmanTreeView.drawTree(treeTop);
 
-            if (file != null) {
-                Runnable runnable = new Thread(() -> {
-                    Canvas treeCanvas = huffmanTreeView.drawTree(treeTop);
-                    WritableImage writableImage =snapshotScaledCanvas(treeCanvas,2);
-                    RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
-                    try {
-                        ImageIO.write(renderedImage, "png", file);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-                runnable.run();
+            if (treeCanvas != null) {
+                //Show save file dialog
+                File file = fileChooser.showSaveDialog(new Stage());
+                if (file != null) {
+
+                    Runnable runnable = new Thread(() -> {
+
+                        WritableImage writableImage = snapshotScaledCanvas(treeCanvas, 2);
+                        RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
+                        try {
+                            ImageIO.write(renderedImage, "png", file);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    runnable.run();
+                }
+            } else {
+                showAlertMessage("Uwaga", "Błąd renderowania drzewa", "Ze względu na ograniczenia biblioteki JavaFx nie można stworzyć trzeba." +
+                        "\nWielkość drzewa jest za duża." +
+                        "\nWprowadź mniejszą wiadomość.");
             }
+
+
         } else {
-            showAlertMessage();
+            showAlertMessage("Uwaga!", "Nieprawidłowa wiadomość", "Wiadomość musi się składać z minimum 2 różnych znaków !");
         }
+
     }
 
 
     public static WritableImage snapshotScaledCanvas(Canvas canvas, double pixelScale) {
-        WritableImage writableImage = new WritableImage((int)Math.rint(pixelScale*canvas.getWidth()), (int)Math.rint(pixelScale*canvas.getHeight()));
+        WritableImage writableImage = new WritableImage((int) Math.rint(pixelScale * canvas.getWidth()), (int) Math.rint(pixelScale * canvas.getHeight()));
         SnapshotParameters spa = new SnapshotParameters();
         spa.setTransform(Transform.scale(pixelScale, pixelScale));
         return canvas.snapshot(spa, writableImage);
     }
 
-    private void showAlertMessage() {
+    private void showAlertMessage(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Uwaga!");
-        alert.setHeaderText("Nieprawidłowa wiadomość");
-        alert.setContentText("Wiadomość musi się składać z minimum 2 różnych znaków !");
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
         alert.showAndWait();
 
     }
@@ -245,5 +274,6 @@ public class MainStageController implements Initializable {
             });
         });
     }
+
 
 }
