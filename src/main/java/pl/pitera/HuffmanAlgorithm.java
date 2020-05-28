@@ -64,4 +64,12 @@ public class HuffmanAlgorithm {
     }
 
 
+    public int calcInputBits(int textLength) {
+        return textLength * 8;
+    }
+
+    public double calcCompressionPercent(int inputBits, int outputBits) {
+        return 100.0 - ((outputBits * 100.0) / inputBits);
+    }
+
 }

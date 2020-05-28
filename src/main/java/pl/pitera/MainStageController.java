@@ -1,28 +1,17 @@
 package pl.pitera;
 
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.SnapshotParameters;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.transform.Transform;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import javax.imageio.ImageIO;
-import java.awt.image.RenderedImage;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Stream;
@@ -53,6 +42,15 @@ public class MainStageController implements Initializable {
     @FXML
     TextArea encodedMessage;
 
+    @FXML
+    TextArea inputBits;
+
+    @FXML
+    TextArea outputBits;
+
+    @FXML
+    TextArea compression;
+
     private StringProperty messageStringProp;
     private ObservableList<CharacterViewModel> characters;
     private HuffmanAlgorithm huffmanAlgorithm;
@@ -60,6 +58,9 @@ public class MainStageController implements Initializable {
     private StringProperty entropyStringProp;
     private StringProperty avgWordLengthStringProp;
     private StringProperty encodeMessageStingProp;
+    private StringProperty inputBitsStringProp;
+    private StringProperty outputBitsStringProp;
+    private StringProperty compressionStringProp;
     private HuffmanTreeView huffmanTreeView;
     private TreeNode treeTop = null;
 
@@ -71,6 +72,9 @@ public class MainStageController implements Initializable {
         entropyStringProp = new SimpleStringProperty();
         avgWordLengthStringProp = new SimpleStringProperty();
         encodeMessageStingProp = new SimpleStringProperty();
+        inputBitsStringProp = new SimpleStringProperty();
+        outputBitsStringProp = new SimpleStringProperty();
+        compressionStringProp = new SimpleStringProperty();
         huffmanTreeView = new HuffmanTreeView();
     }
 
@@ -83,6 +87,9 @@ public class MainStageController implements Initializable {
         encodedMessage.textProperty().bindBidirectional(encodeMessageStingProp);
         avgWordLength.textProperty().bindBidirectional(avgWordLengthStringProp);
         entropy.textProperty().bindBidirectional(entropyStringProp);
+        inputBits.textProperty().bindBidirectional(inputBitsStringProp);
+        outputBits.textProperty().bindBidirectional(outputBitsStringProp);
+        compression.textProperty().bindBidirectional(compressionStringProp);
 
         setupTableView();
 
@@ -118,18 +125,28 @@ public class MainStageController implements Initializable {
                 Map<Character, String> huffmanCodes = huffmanAlgorithm.encodeCharacters(treeTop);
                 updateViewList(characters, huffmanCodes);
 
-                //entropy label
+                //entropy
                 entropyStringProp.setValue(String.valueOf(huffmanAlgorithm.calcEntropy(characters, textLength)));
 
-                //avg word length label
+                //avg word length
                 avgWordLengthStringProp.setValue(String.valueOf(huffmanAlgorithm.calcAvgWordLength(characters, textLength)));
 
                 //joining of coded characters
                 characters.forEach(characterViewModel -> encodedMessageStringBuilder.append(characterViewModel.getCode()));
 
-                //encoded message label
+                //encoded message
                 encodeMessageStingProp.setValue(encodedMessageStringBuilder.toString());
 
+                //input bits
+                int inputBits = huffmanAlgorithm.calcInputBits(textLength);
+                inputBitsStringProp.setValue(inputBits + " b");
+
+                //output bits
+                int outputBits = encodedMessageStringBuilder.toString().length();
+                outputBitsStringProp.setValue(outputBits + " b");
+
+                //compression
+                compressionStringProp.setValue(huffmanAlgorithm.calcCompressionPercent(inputBits, outputBits) + " %");
 
             } else {
                 treeTop = null;
@@ -179,89 +196,32 @@ public class MainStageController implements Initializable {
     public void treeButton() {
 
         if (treeTop != null) {
-            Canvas treeCanvas = huffmanTreeView.drawTree(treeTop);
-            if (treeCanvas != null) {
-                Stage stage = new Stage();
-                stage.setTitle("Drzewo");
 
-                AnchorPane container = new AnchorPane();
+            Stage stage = new Stage();
+            stage.setTitle("Drzewo");
 
-                ScrollPane scrollPane = new ScrollPane(container);
+            AnchorPane container = huffmanTreeView.drawTree(treeTop);
 
+            ScrollPane scrollPane = new ScrollPane(container);
 
-                container.getChildren().add(treeCanvas);
-
-                Scene scene = new Scene(scrollPane, 800, 800);
-                stage.setScene(scene);
-                stage.show();
-            } else {
-                // i know is not good solution... ;/
-                showAlertMessage("Uwaga", "Błąd renderowania drzewa", "Ze względu na ograniczenia biblioteki JavaFx nie można stworzyć drzewa." +
-                        "\nWielkość drzewa jest za duża." +
-                        "\nWprowadź mniejszą wiadomość.");
-            }
-        } else {
-            showAlertMessage("Uwaga!", "Nieprawidłowa wiadomość", "Wiadomość musi się składać z minimum 2 różnych znaków !");
-        }
-    }
-
-    @FXML
-    public void saveTree() {
-        if (treeTop != null) {
-            FileChooser fileChooser = new FileChooser();
-
-            //Set extension filter
-            FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("png files (*.png)", "*.png");
-            fileChooser.getExtensionFilters().add(extFilter);
-
-            //build tree view
-            Canvas treeCanvas = huffmanTreeView.drawTree(treeTop);
-
-            if (treeCanvas != null) {
-                //Show save file dialog
-                File file = fileChooser.showSaveDialog(new Stage());
-                if (file != null) {
-
-                    Runnable runnable = new Thread(() -> {
-
-                        WritableImage writableImage = snapshotScaledCanvas(treeCanvas, 2);
-                        RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
-                        try {
-                            ImageIO.write(renderedImage, "png", file);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                    runnable.run();
-                }
-            } else {
-                showAlertMessage("Uwaga", "Błąd renderowania drzewa", "Ze względu na ograniczenia biblioteki JavaFx nie można stworzyć trzeba." +
-                        "\nWielkość drzewa jest za duża." +
-                        "\nWprowadź mniejszą wiadomość.");
-            }
-
+            Scene scene = new Scene(scrollPane, 800, 800);
+            stage.setScene(scene);
+            stage.show();
 
         } else {
             showAlertMessage("Uwaga!", "Nieprawidłowa wiadomość", "Wiadomość musi się składać z minimum 2 różnych znaków !");
         }
-
     }
 
-
-    public static WritableImage snapshotScaledCanvas(Canvas canvas, double pixelScale) {
-        WritableImage writableImage = new WritableImage((int) Math.rint(pixelScale * canvas.getWidth()), (int) Math.rint(pixelScale * canvas.getHeight()));
-        SnapshotParameters spa = new SnapshotParameters();
-        spa.setTransform(Transform.scale(pixelScale, pixelScale));
-        return canvas.snapshot(spa, writableImage);
-    }
 
     private void showAlertMessage(String title, String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
-
+        if (title != null && header != null && content != null) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle(title);
+            alert.setHeaderText(header);
+            alert.setContentText(content);
+            alert.showAndWait();
+        }
     }
 
 
