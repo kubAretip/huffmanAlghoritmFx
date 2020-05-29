@@ -104,7 +104,7 @@ public class HuffmanTreeView {
         double branchMarkPositionX;
         double branchMarkPositionY;
 
-        if (root.getLeft() != null) {
+        if (root.getLeftChildren() != null) {
 
             x1 = x0 - leavesMargin;
             branchMarkPositionX = ((x0 + x1) / 2) - 20;
@@ -113,10 +113,10 @@ public class HuffmanTreeView {
             setBranchSignature(graphicsContext, x0, y0, x1, y1, branchMarkPositionX, branchMarkPositionY, new Label("0"));
 
 
-            drawBranch(root.getLeft(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
+            drawBranch(root.getLeftChildren(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
         }
 
-        if (root.getRight() != null) {
+        if (root.getRightChildren() != null) {
 
             x1 = x0 + leavesMargin;
             branchMarkPositionX = ((x1 + x0) / 2) - 10;
@@ -126,7 +126,7 @@ public class HuffmanTreeView {
             setBranchSignature(graphicsContext, x0, y0, x1, y1, branchMarkPositionX, branchMarkPositionY, new Label("1"));
 
 
-            drawBranch(root.getRight(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
+            drawBranch(root.getRightChildren(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
         }
 
     }

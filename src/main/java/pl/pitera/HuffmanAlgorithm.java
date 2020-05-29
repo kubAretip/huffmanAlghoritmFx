@@ -8,7 +8,13 @@ import java.util.PriorityQueue;
 
 public class HuffmanAlgorithm {
 
-
+    /**
+     * build huffman tree structure
+     *
+     * @param treeNodes queue with tree element. It's a message divided into characters (the characters are wrapped in TreeNode objects) and added to the queue
+     * @return tree top element with huffman tree structure
+     * @see TreeNode
+     */
     public TreeNode buildTree(PriorityQueue<TreeNode> treeNodes) {
 
         while (treeNodes.size() != 1) {
@@ -24,6 +30,10 @@ public class HuffmanAlgorithm {
         return treeNodes.peek();
     }
 
+    /**
+     * @param root the top element of the huffman tree
+     * @return characters with codes
+     */
     public Map<Character, String> encodeCharacters(TreeNode root) {
         Map<Character, String> huffmanCodes = new HashMap<>();
         encode(root, "", huffmanCodes);
@@ -35,11 +45,11 @@ public class HuffmanAlgorithm {
 
         if (treeNode != null) {
 
-            if (treeNode.getLeft() == null && treeNode.getRight() == null) {
+            if (treeNode.getLeftChildren() == null && treeNode.getRightChildren() == null) {
                 huffmanCodes.put(treeNode.getCharacter(), str);
             }
-            encode(treeNode.getLeft(), str + "0", huffmanCodes);
-            encode(treeNode.getRight(), str + "1", huffmanCodes);
+            encode(treeNode.getLeftChildren(), str + "0", huffmanCodes);
+            encode(treeNode.getRightChildren(), str + "1", huffmanCodes);
         }
     }
 
@@ -68,7 +78,7 @@ public class HuffmanAlgorithm {
         return textLength * 8;
     }
 
-    public double calcCompressionPercent(int inputBits, int outputBits) {
+    public double calcCompressionInPercent(int inputBits, int outputBits) {
         return 100.0 - ((outputBits * 100.0) / inputBits);
     }
 

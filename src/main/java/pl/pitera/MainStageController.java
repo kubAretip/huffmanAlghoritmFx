@@ -109,10 +109,10 @@ public class MainStageController implements Initializable {
                 characters.clear();
 
                 //split string to chars
-                Supplier<Stream<Character>> characterStreamSupplier = () -> observableValue.getValue().chars().mapToObj(c -> (char) c);
+                Supplier<Stream<Character>> messageCharacterStreamSupplier = () -> observableValue.getValue().chars().mapToObj(c -> (char) c);
 
                 //add characters to the map with their frequency
-                characterStreamSupplier.get().forEach(character -> charactersFrequency.compute(character, (k, v) -> (v == null) ? 1 : v + 1));
+                messageCharacterStreamSupplier.get().forEach(character -> charactersFrequency.compute(character, (k, v) -> (v == null) ? 1 : v + 1));
 
                 //data models
                 PriorityQueue<TreeNode> treeNodes = new PriorityQueue<>(Comparator.comparingInt(TreeNode::getFreq));
@@ -124,6 +124,8 @@ public class MainStageController implements Initializable {
                 //encode characters
                 treeTop = huffmanAlgorithm.buildTree(treeNodes);
                 Map<Character, String> huffmanCodes = huffmanAlgorithm.encodeCharacters(treeTop);
+
+                //update view model data
                 updateViewList(characters, huffmanCodes);
 
                 //entropy
@@ -133,8 +135,8 @@ public class MainStageController implements Initializable {
                 avgWordLengthStringProp.setValue(String.valueOf(huffmanAlgorithm.calcAvgWordLength(characters, textLength)));
 
                 //joining of coded characters
-                characterStreamSupplier.get().forEach(character -> characters.stream()
-                        .anyMatch(codedCharacter -> character.equals(character.toString().equals(codedCharacter.getCharacter())
+                messageCharacterStreamSupplier.get().forEach(characterInMessage -> characters.stream()
+                        .anyMatch(codedCharacter -> characterInMessage.equals(characterInMessage.toString().equals(codedCharacter.getCharacter())
                                 ? encodedMessageStringBuilder.append(codedCharacter.getCode()) : null)));
 
                 //encoded message
@@ -149,9 +151,10 @@ public class MainStageController implements Initializable {
                 outputBitsStringProp.setValue(outputBits + " b");
 
                 //compression
-                compressionStringProp.setValue(huffmanAlgorithm.calcCompressionPercent(inputBits, outputBits) + " %");
+                compressionStringProp.setValue(huffmanAlgorithm.calcCompressionInPercent(inputBits, outputBits) + " %");
 
             } else {
+                //clear labels
                 treeTop = null;
                 encodedMessageStringBuilder.setLength(0);
                 characters.clear();
@@ -164,6 +167,7 @@ public class MainStageController implements Initializable {
         });
 
     }
+
 
     private void setupTableView() {
 
@@ -227,8 +231,13 @@ public class MainStageController implements Initializable {
         }
     }
 
-
-    private void updateViewList(List<CharacterViewModel> characterViewModelList, Map<Character, String> huffmanCodes) {
+    /**
+     * update characters codes to view model list
+     *
+     * @param characterViewModelList ObservableList with model to TableView
+     * @param huffmanCodes           List with encoded character by Huffman algorithm
+     */
+    private void updateViewList(ObservableList<CharacterViewModel> characterViewModelList, Map<Character, String> huffmanCodes) {
         characterViewModelList.forEach(characterViewModel -> {
             huffmanCodes.forEach((character, s) -> {
                 if (characterViewModel.getCharacter().equals(character.toString())) {
