@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class MainStageController implements Initializable {
@@ -108,10 +109,10 @@ public class MainStageController implements Initializable {
                 characters.clear();
 
                 //split string to chars
-                Stream<Character> characterStream = observableValue.getValue().chars().mapToObj(c -> (char) c);
+                Supplier<Stream<Character>> characterStreamSupplier = () -> observableValue.getValue().chars().mapToObj(c -> (char) c);
 
                 //add characters to the map with their frequency
-                characterStream.forEach(character -> charactersFrequency.compute(character, (k, v) -> (v == null) ? 1 : v + 1));
+                characterStreamSupplier.get().forEach(character -> charactersFrequency.compute(character, (k, v) -> (v == null) ? 1 : v + 1));
 
                 //data models
                 PriorityQueue<TreeNode> treeNodes = new PriorityQueue<>(Comparator.comparingInt(TreeNode::getFreq));
@@ -132,7 +133,9 @@ public class MainStageController implements Initializable {
                 avgWordLengthStringProp.setValue(String.valueOf(huffmanAlgorithm.calcAvgWordLength(characters, textLength)));
 
                 //joining of coded characters
-                characters.forEach(characterViewModel -> encodedMessageStringBuilder.append(characterViewModel.getCode()));
+                characterStreamSupplier.get().forEach(character -> characters.stream()
+                        .anyMatch(codedCharacter -> character.equals(character.toString().equals(codedCharacter.getCharacter())
+                                ? encodedMessageStringBuilder.append(codedCharacter.getCode()) : null)));
 
                 //encoded message
                 encodeMessageStingProp.setValue(encodedMessageStringBuilder.toString());
