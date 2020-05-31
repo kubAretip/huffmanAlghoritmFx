@@ -5,13 +5,13 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class CharacterViewModel {
+public class CharacterModel {
 
     private StringProperty character;
     private IntegerProperty frequency;
     private StringProperty code;
 
-    public CharacterViewModel(String character, Integer frequency, String code) {
+    public CharacterModel(String character, Integer frequency, String code) {
         this.character = new SimpleStringProperty(character);
         this.frequency = new SimpleIntegerProperty(frequency);
         this.code = new SimpleStringProperty(code);

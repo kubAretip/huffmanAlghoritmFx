@@ -112,7 +112,6 @@ public class HuffmanTreeView {
 
             setBranchSignature(graphicsContext, x0, y0, x1, y1, branchMarkPositionX, branchMarkPositionY, new Label("0"));
 
-
             drawBranch(root.getLeftChildren(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
         }
 
@@ -122,16 +121,15 @@ public class HuffmanTreeView {
             branchMarkPositionX = ((x1 + x0) / 2) - 10;
             branchMarkPositionY = ((y1 + y0) / 2) - 15;
 
-
             setBranchSignature(graphicsContext, x0, y0, x1, y1, branchMarkPositionX, branchMarkPositionY, new Label("1"));
-
 
             drawBranch(root.getRightChildren(), x1 - CIRCLE_RADIUS, y1, graphicsContext, (leavesMargin / 2));
         }
 
     }
 
-    private void setBranchSignature(AnchorPane graphicsContext, double x0, double y0, double x1, double y1, double branchMarkPositionX, double branchMarkPositionY, Label branchSignatureLabel) {
+    private void setBranchSignature(AnchorPane graphicsContext, double x0, double y0, double x1, double y1,
+                                    double branchMarkPositionX, double branchMarkPositionY, Label branchSignatureLabel) {
         branchSignatureLabel.setLayoutX(branchMarkPositionX);
         branchSignatureLabel.setLayoutY(branchMarkPositionY);
         graphicsContext.getChildren().add(branchSignatureLabel);
@@ -146,3 +144,4 @@ public class HuffmanTreeView {
     }
 
 }
+

@@ -106,7 +106,7 @@
             <children>
                <VBox prefHeight="200.0" prefWidth="100.0">
                   <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Stopień kompresji" wrappingWidth="166.0">
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Kompresja" wrappingWidth="166.0">
                             <font>
                                 <Font size="18.0" />
                             </font>

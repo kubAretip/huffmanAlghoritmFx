@@ -23,16 +23,16 @@ public class MainStageController implements Initializable {
     TextArea textToEncodeTextArea;
 
     @FXML
-    TableView<CharacterViewModel> charsTableView;
+    TableView<CharacterModel> charsTableView;
 
     @FXML
-    TableColumn<CharacterViewModel, String> charsColumn;
+    TableColumn<CharacterModel, String> charsColumn;
 
     @FXML
-    TableColumn<CharacterViewModel, String> probabilityColumn;
+    TableColumn<CharacterModel, String> probabilityColumn;
 
     @FXML
-    TableColumn<CharacterViewModel, String> codeColumn;
+    TableColumn<CharacterModel, String> codeColumn;
 
     @FXML
     TextArea avgWordLength;
@@ -56,7 +56,7 @@ public class MainStageController implements Initializable {
     TextArea efficiency;
 
     private StringProperty messageStringProp;
-    private ObservableList<CharacterViewModel> characters;
+    private ObservableList<CharacterModel> characters;
     private HuffmanAlgorithm huffmanAlgorithm;
     private StringBuilder encodedMessageStringBuilder;
     private StringProperty entropyStringProp;
@@ -127,7 +127,7 @@ public class MainStageController implements Initializable {
                     charactersFrequency.forEach((character, freq) -> treeNodes.add(new TreeNode(freq, character)));
 
                     //update view models
-                    charactersFrequency.forEach((character, freq) -> characters.add(new CharacterViewModel(character.toString(), freq, null)));
+                    charactersFrequency.forEach((character, freq) -> characters.add(new CharacterModel(character.toString(), freq, null)));
 
                     //encode characters
                     treeTop = huffmanAlgorithm.buildTree(treeNodes);
@@ -254,14 +254,14 @@ public class MainStageController implements Initializable {
     /**
      * update characters codes to view model list
      *
-     * @param characterViewModelList ObservableList with model to TableView
+     * @param characterModelList ObservableList with model to TableView
      * @param huffmanCodes           List with encoded character by Huffman algorithm
      */
-    private void updateViewList(ObservableList<CharacterViewModel> characterViewModelList, Map<Character, String> huffmanCodes) {
-        characterViewModelList.forEach(characterViewModel -> {
+    private void updateViewList(ObservableList<CharacterModel> characterModelList, Map<Character, String> huffmanCodes) {
+        characterModelList.forEach(characterModel -> {
             huffmanCodes.forEach((character, s) -> {
-                if (characterViewModel.getCharacter().equals(character.toString())) {
-                    characterViewModel.setCode(s);
+                if (characterModel.getCharacter().equals(character.toString())) {
+                    characterModel.setCode(s);
                 }
             });
         });

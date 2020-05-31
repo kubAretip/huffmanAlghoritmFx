@@ -53,21 +53,20 @@ public class HuffmanAlgorithm {
         }
     }
 
-    public double calcEntropy(List<CharacterViewModel> characterViewModelList, int textLength) {
+    public double calcEntropy(List<CharacterModel> characterModelList, int textLength) {
 
-        return characterViewModelList.stream()
-                .mapToDouble(characterViewModel -> (characterViewModel.getFrequency() / (double) textLength))
+        return characterModelList.stream()
+                .mapToDouble(characterModel -> (characterModel.getFrequency() / (double) textLength))
                 .map(prob -> (prob * CustomMath.customLog(2, (1 / prob)))).sum();
 
     }
 
-
-    public double calcAvgWordLength(List<CharacterViewModel> characterViewModelList, int textLength) {
+    public double calcAvgWordLength(List<CharacterModel> characterModelList, int textLength) {
         double sum = 0;
 
-        for (CharacterViewModel characterViewModel : characterViewModelList) {
-            var prob = (characterViewModel.getFrequency() / (double) textLength);
-            sum += (prob * characterViewModel.getCode().length());
+        for (CharacterModel characterModel : characterModelList) {
+            var prob = (characterModel.getFrequency() / (double) textLength);
+            sum += (prob * characterModel.getCode().length());
         }
 
         return sum;
@@ -79,7 +78,7 @@ public class HuffmanAlgorithm {
     }
 
     public double calcCompressionInPercent(int inputBits, int outputBits) {
-        return 100.0 - ((outputBits * 100.0) / inputBits);
+        return 100 - ((outputBits * 100.0) / inputBits);
     }
 
 }
