@@ -52,6 +52,9 @@ public class MainStageController implements Initializable {
     @FXML
     TextArea compression;
 
+    @FXML
+    TextArea efficiency;
+
     private StringProperty messageStringProp;
     private ObservableList<CharacterViewModel> characters;
     private HuffmanAlgorithm huffmanAlgorithm;
@@ -62,6 +65,7 @@ public class MainStageController implements Initializable {
     private StringProperty inputBitsStringProp;
     private StringProperty outputBitsStringProp;
     private StringProperty compressionStringProp;
+    private StringProperty efficiencyStringProp;
     private HuffmanTreeView huffmanTreeView;
     private TreeNode treeTop = null;
 
@@ -76,6 +80,7 @@ public class MainStageController implements Initializable {
         inputBitsStringProp = new SimpleStringProperty();
         outputBitsStringProp = new SimpleStringProperty();
         compressionStringProp = new SimpleStringProperty();
+        efficiencyStringProp = new SimpleStringProperty();
         huffmanTreeView = new HuffmanTreeView();
     }
 
@@ -91,6 +96,7 @@ public class MainStageController implements Initializable {
         inputBits.textProperty().bindBidirectional(inputBitsStringProp);
         outputBits.textProperty().bindBidirectional(outputBitsStringProp);
         compression.textProperty().bindBidirectional(compressionStringProp);
+        efficiency.textProperty().bindBidirectional(efficiencyStringProp);
 
         setupTableView();
 
@@ -102,11 +108,11 @@ public class MainStageController implements Initializable {
 
             if (textLength > 1) {
 
-                Map<Character, Integer> charactersFrequency = new HashMap<>();
-
                 //is not good solution but work
                 encodedMessageStringBuilder.setLength(0);
                 characters.clear();
+
+                Map<Character, Integer> charactersFrequency = new HashMap<>();
 
                 //split string to chars
                 Supplier<Stream<Character>> messageCharacterStreamSupplier = () -> observableValue.getValue().chars().mapToObj(c -> (char) c);
@@ -114,58 +120,72 @@ public class MainStageController implements Initializable {
                 //add characters to the map with their frequency
                 messageCharacterStreamSupplier.get().forEach(character -> charactersFrequency.compute(character, (k, v) -> (v == null) ? 1 : v + 1));
 
-                //data models
-                PriorityQueue<TreeNode> treeNodes = new PriorityQueue<>(Comparator.comparingInt(TreeNode::getFreq));
-                charactersFrequency.forEach((character, freq) -> treeNodes.add(new TreeNode(freq, character)));
+                if (charactersFrequency.size() >= 2) {
 
-                //update view models
-                charactersFrequency.forEach((character, freq) -> characters.add(new CharacterViewModel(character.toString(), freq, null)));
+                    //data models
+                    PriorityQueue<TreeNode> treeNodes = new PriorityQueue<>(Comparator.comparingInt(TreeNode::getFreq));
+                    charactersFrequency.forEach((character, freq) -> treeNodes.add(new TreeNode(freq, character)));
 
-                //encode characters
-                treeTop = huffmanAlgorithm.buildTree(treeNodes);
-                Map<Character, String> huffmanCodes = huffmanAlgorithm.encodeCharacters(treeTop);
+                    //update view models
+                    charactersFrequency.forEach((character, freq) -> characters.add(new CharacterViewModel(character.toString(), freq, null)));
 
-                //update view model data
-                updateViewList(characters, huffmanCodes);
+                    //encode characters
+                    treeTop = huffmanAlgorithm.buildTree(treeNodes);
+                    Map<Character, String> huffmanCodes = huffmanAlgorithm.encodeCharacters(treeTop);
 
-                //entropy
-                entropyStringProp.setValue(String.valueOf(huffmanAlgorithm.calcEntropy(characters, textLength)));
+                    //update view model data
+                    updateViewList(characters, huffmanCodes);
 
-                //avg word length
-                avgWordLengthStringProp.setValue(String.valueOf(huffmanAlgorithm.calcAvgWordLength(characters, textLength)));
+                    //entropy
+                    double entropyValue = huffmanAlgorithm.calcEntropy(characters, textLength);
+                    entropyStringProp.setValue(String.format("%.6f", entropyValue));
 
-                //joining of coded characters
-                messageCharacterStreamSupplier.get().forEach(characterInMessage -> characters.stream()
-                        .anyMatch(codedCharacter -> characterInMessage.equals(characterInMessage.toString().equals(codedCharacter.getCharacter())
-                                ? encodedMessageStringBuilder.append(codedCharacter.getCode()) : null)));
+                    //avg word length
 
-                //encoded message
-                encodeMessageStingProp.setValue(encodedMessageStringBuilder.toString());
+                    double avgWordLengthValue = huffmanAlgorithm.calcAvgWordLength(characters, textLength);
+                    avgWordLengthStringProp.setValue(String.format("%.6f", avgWordLengthValue));
 
-                //input bits
-                int inputBits = huffmanAlgorithm.calcInputBits(textLength);
-                inputBitsStringProp.setValue(inputBits + " b");
+                    //joining of coded characters
+                    messageCharacterStreamSupplier.get().forEach(characterInMessage -> characters.stream()
+                            .anyMatch(codedCharacter -> characterInMessage.equals(characterInMessage.toString().equals(codedCharacter.getCharacter())
+                                    ? encodedMessageStringBuilder.append(codedCharacter.getCode()) : null)));
 
-                //output bits
-                int outputBits = encodedMessageStringBuilder.toString().length();
-                outputBitsStringProp.setValue(outputBits + " b");
+                    //encoded message
+                    encodeMessageStingProp.setValue(encodedMessageStringBuilder.toString());
 
-                //compression
-                compressionStringProp.setValue(huffmanAlgorithm.calcCompressionInPercent(inputBits, outputBits) + " %");
+                    //input bits
+                    int inputBits = huffmanAlgorithm.calcInputBits(textLength);
+                    inputBitsStringProp.setValue(inputBits + " b");
+
+                    //output bits
+                    int outputBits = encodedMessageStringBuilder.toString().length();
+                    outputBitsStringProp.setValue(outputBits + " b");
+
+                    //compression
+                    compressionStringProp.setValue(String.format("%.2f", huffmanAlgorithm.calcCompressionInPercent(inputBits, outputBits)) + " %");
+
+                    //efficiency
+                    efficiencyStringProp.setValue(String.format("%.2f", (entropyValue / avgWordLengthValue) * 100) + " %");
+                } else {
+                    clearLabels();
+                }
 
             } else {
-                //clear labels
-                treeTop = null;
-                encodedMessageStringBuilder.setLength(0);
-                characters.clear();
-                encodedMessage.setText("");
-                avgWordLength.setText("");
-                entropy.setText("");
+                clearLabels();
             }
 
 
         });
 
+    }
+
+    private void clearLabels() {
+        treeTop = null;
+        encodedMessageStringBuilder.setLength(0);
+        characters.clear();
+        encodedMessage.setText("");
+        avgWordLength.setText("");
+        entropy.setText("");
     }
 
 
