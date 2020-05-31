@@ -1,16 +1,17 @@
 # huffmanAlghoritmFx
 
-RUN 
-mvn clean javafx:run
+### RUN 
+  mvn clean javafx:run
 
-DEPLOY
-mvn clean javafx:jlink
+### DEPLOY
+  mvn clean javafx:jlink
 
-Path to the prepared application
-target/huffman
+### Path to the prepared application
+ target/huffman
 
-Zipped app target/huffman.zip
+### Zipped application path 
+  target/huffman.zip
 
-Run prepered app
-WINDOWS: launch.sh.bat
-LINUX: launch.sh
+### Run application
+* [WINDOWS] huffman/bin/launch.sh.bat
+* [LINUX] huffman/bin/launch.sh
