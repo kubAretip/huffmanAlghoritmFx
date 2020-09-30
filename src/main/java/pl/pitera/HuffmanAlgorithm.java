@@ -1,5 +1,9 @@
 package pl.pitera;
 
+import pl.pitera.math.CustomMath;
+import pl.pitera.model.CharacterModel;
+import pl.pitera.model.TreeNode;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

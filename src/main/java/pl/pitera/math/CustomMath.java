@@ -1,4 +1,4 @@
-package pl.pitera;
+package pl.pitera.math;
 
 public class CustomMath {
 

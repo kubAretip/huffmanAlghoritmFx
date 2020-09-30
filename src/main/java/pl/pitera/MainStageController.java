@@ -11,6 +11,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import pl.pitera.model.CharacterModel;
+import pl.pitera.model.TreeNode;
 
 import java.net.URL;
 import java.util.*;
@@ -20,41 +22,31 @@ import java.util.stream.Stream;
 public class MainStageController implements Initializable {
 
     @FXML
-    TextArea textToEncodeTextArea;
-
+    private TextArea textToEncodeTextArea;
     @FXML
-    TableView<CharacterModel> charsTableView;
-
+    private TableView<CharacterModel> charsTableView;
     @FXML
-    TableColumn<CharacterModel, String> charsColumn;
-
+    private TableColumn<CharacterModel, String> charsColumn;
     @FXML
-    TableColumn<CharacterModel, String> probabilityColumn;
-
+    private TableColumn<CharacterModel, String> probabilityColumn;
     @FXML
-    TableColumn<CharacterModel, String> codeColumn;
-
+    private TableColumn<CharacterModel, String> codeColumn;
     @FXML
-    TextArea avgWordLength;
-
+    private TextArea avgWordLength;
     @FXML
-    TextArea entropy;
-
+    private TextArea entropy;
     @FXML
-    TextArea encodedMessage;
-
+    private TextArea encodedMessage;
     @FXML
-    TextArea inputBits;
-
+    private TextArea inputBits;
     @FXML
-    TextArea outputBits;
-
+    private TextArea outputBits;
     @FXML
-    TextArea compression;
-
+    private TextArea compression;
     @FXML
-    TextArea efficiency;
+    private TextArea efficiency;
 
+    private ResourceBundle resourceBundle;
     private StringProperty messageStringProp;
     private ObservableList<CharacterModel> characters;
     private HuffmanAlgorithm huffmanAlgorithm;
@@ -87,8 +79,8 @@ public class MainStageController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
+        this.resourceBundle = resourceBundle;
 
-        //setup bindings
         Bindings.bindBidirectional(textToEncodeTextArea.textProperty(), messageStringProp);
         encodedMessage.textProperty().bindBidirectional(encodeMessageStingProp);
         avgWordLength.textProperty().bindBidirectional(avgWordLengthStringProp);
@@ -100,15 +92,12 @@ public class MainStageController implements Initializable {
 
         setupTableView();
 
-
-        //listen on the entered message to encode
         messageStringProp.addListener((observableValue, oldVal, newVal) -> {
 
             int textLength = observableValue.getValue().length();
 
             if (textLength > 1) {
 
-                //is not good solution but work
                 encodedMessageStringBuilder.setLength(0);
                 characters.clear();
 
@@ -136,35 +125,29 @@ public class MainStageController implements Initializable {
                     //update view model data
                     updateViewList(characters, huffmanCodes);
 
-                    //entropy
+
                     double entropyValue = huffmanAlgorithm.calcEntropy(characters, textLength);
                     entropyStringProp.setValue(String.format("%.6f", entropyValue));
-
-                    //avg word length
 
                     double avgWordLengthValue = huffmanAlgorithm.calcAvgWordLength(characters, textLength);
                     avgWordLengthStringProp.setValue(String.format("%.6f", avgWordLengthValue));
 
                     //joining of coded characters
-                    messageCharacterStreamSupplier.get().forEach(characterInMessage -> characters.stream()
-                            .anyMatch(codedCharacter -> characterInMessage.equals(characterInMessage.toString().equals(codedCharacter.getCharacter())
-                                    ? encodedMessageStringBuilder.append(codedCharacter.getCode()) : null)));
+                    messageCharacterStreamSupplier
+                            .get()
+                            .forEach(characterInMessage -> characters.stream()
+                                    .anyMatch(codedCharacter -> characterInMessage.equals(characterInMessage.toString().equals(codedCharacter.getCharacter())
+                                            ? encodedMessageStringBuilder.append(codedCharacter.getCode()) : null)));
 
-                    //encoded message
                     encodeMessageStingProp.setValue(encodedMessageStringBuilder.toString());
 
-                    //input bits
                     int inputBits = huffmanAlgorithm.calcInputBits(textLength);
                     inputBitsStringProp.setValue(inputBits + " b");
 
-                    //output bits
                     int outputBits = encodedMessageStringBuilder.toString().length();
                     outputBitsStringProp.setValue(outputBits + " b");
 
-                    //compression
                     compressionStringProp.setValue(String.format("%.2f", huffmanAlgorithm.calcCompressionInPercent(inputBits, outputBits)) + " %");
-
-                    //efficiency
                     efficiencyStringProp.setValue(String.format("%.2f", (entropyValue / avgWordLengthValue) * 100) + " %");
                 } else {
                     clearLabels();
@@ -191,17 +174,17 @@ public class MainStageController implements Initializable {
 
     private void setupTableView() {
 
-        charsTableView.setPlaceholder(new Label("Brak wymaganej ilości znaków"));
+        charsTableView.setPlaceholder(new Label(resourceBundle.getString("required-character-missing")));
 
         charsColumn.setCellValueFactory(cellData -> {
             if (cellData.getValue().characterProperty().getValue().toCharArray()[0] == ' ')
-                return new SimpleStringProperty("<spacja>");
+                return new SimpleStringProperty(resourceBundle.getString("space"));
 
             if (cellData.getValue().characterProperty().getValue().toCharArray()[0] == '\n')
-                return new SimpleStringProperty("<nowa linia>");
+                return new SimpleStringProperty(resourceBundle.getString("new-line"));
 
             if (cellData.getValue().characterProperty().getValue().toCharArray()[0] == '\t')
-                return new SimpleStringProperty("<tabulator>");
+                return new SimpleStringProperty(resourceBundle.getString("tab"));
 
             return cellData.getValue().characterProperty();
         });
@@ -225,7 +208,7 @@ public class MainStageController implements Initializable {
         if (treeTop != null) {
 
             Stage stage = new Stage();
-            stage.setTitle("Drzewo");
+            stage.setTitle(resourceBundle.getString("tree"));
 
             AnchorPane container = huffmanTreeView.drawTree(treeTop);
 
@@ -236,7 +219,9 @@ public class MainStageController implements Initializable {
             stage.show();
 
         } else {
-            showAlertMessage("Uwaga!", "Nieprawidłowa wiadomość", "Wiadomość musi się składać z minimum 2 różnych znaków !");
+            showAlertMessage(resourceBundle.getString("error"),
+                    resourceBundle.getString("invalid-message"),
+                    resourceBundle.getString("invalid-message-content"));
         }
     }
 
@@ -255,7 +240,7 @@ public class MainStageController implements Initializable {
      * update characters codes to view model list
      *
      * @param characterModelList ObservableList with model to TableView
-     * @param huffmanCodes           List with encoded character by Huffman algorithm
+     * @param huffmanCodes       List with encoded character by Huffman algorithm
      */
     private void updateViewList(ObservableList<CharacterModel> characterModelList, Map<Character, String> huffmanCodes) {
         characterModelList.forEach(characterModel -> {

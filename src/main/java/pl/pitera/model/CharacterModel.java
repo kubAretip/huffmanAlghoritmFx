@@ -1,4 +1,4 @@
-package pl.pitera;
+package pl.pitera.model;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
