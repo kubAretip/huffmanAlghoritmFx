@@ -18,3 +18,6 @@
 
 ### Application screenshot
 
+<img src="./screenshots/screen_1.png">
+<img src="./screenshots/screen_2.png">
+<img src="./screenshots/screen_3.png">
