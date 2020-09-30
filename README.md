@@ -15,3 +15,6 @@
 ### Run application
 * [WINDOWS] huffman/bin/launch.sh.bat
 * [LINUX] huffman/bin/launch.sh
+
+### Application screenshot
+
